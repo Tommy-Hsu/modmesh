@@ -295,7 +295,7 @@ public:
         return max_index;
     }
 
-    SimpleArray<uint64_t> argwhere(const std::function<bool(value_type)> & func) const;
+    SimpleArray<uint64_t> argwhere(std::function<bool(value_type)> const & func) const;
 }; /* end class SimpleArrayMixinSearch */
 
 } /* end namespace detail */
@@ -1037,20 +1037,29 @@ A detail::SimpleArrayMixinSort<A, T>::take_along_axis_simd(SimpleArray<I> const 
 }
 
 template <typename A, typename T>
-SimpleArray<uint64_t> detail::SimpleArrayMixinSearch<A, T>::argwhere (const std::function<bool(value_type)> & condition) const
+SimpleArray<uint64_t> detail::SimpleArrayMixinSearch<A, T>::argwhere(std::function<bool(value_type)> const & condition) const
 {
     size_t num_true = 0;
     auto athis = static_cast<A const *>(this);
+    std::forward_list<uint64_t> indices;
+    auto last = indices.before_begin();
     for (size_t i = 0; i < athis->size(); ++i)
     {
         if (condition(athis->data(i)))
         {
+            last = indices.emplace_after(last, static_cast<uint64_t>(i));
             ++num_true;
         }
     }
 
-    //std::vector<size_t> ret_shape = {num_true, athis->ndim()};
     SimpleArray<uint64_t> result(std::vector<size_t>{num_true, athis->ndim()});
+    auto it = result.begin();
+    // TODO: N-dimensionality
+    for (auto& index : indices)
+    {
+        *it = index;
+        ++it;
+    }
     return result;
 }
 
