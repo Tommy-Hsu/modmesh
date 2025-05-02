@@ -1021,6 +1021,42 @@ class SimpleArraySearchTC(unittest.TestCase):
         self.assertEqual(narr.argmin(), sarr.argmin())
         self.assertEqual(narr.argmax(), sarr.argmax())
 
+    def test_argwhere(self):
+        # test 1-D data
+        data = [1, 3, 5, 7, 9]
+        narr = np.array(data, dtype='uint64')
+        sarr = modmesh.SimpleArrayUint64(array=narr)
+
+        ret_np = np.argwhere(narr > 3)
+        ret_sa = sarr.argwhere(lambda x: x > 3)
+
+        print()
+        print(ret_np)
+        print(ret_np.shape)
+        print(ret_sa.shape)
+
+        self.assertEqual(ret_np.shape, ret_sa.shape)
+        for i in range(ret_sa.shape[0]):
+            for j in range(ret_sa.shape[1]):
+                print(ret_np[i, j])
+                print(ret_sa[i, j])
+                # self.assertEqual(ret_np[i][j], ret_sa[i][j])
+
+        # test N-D data
+        data = [[1, 3, 5, 7, 9], [2, 4, 6, 8, 10], [1, 10, 1, 10, 1]]
+        narr = np.array(data, dtype='float64')
+        sarr = modmesh.SimpleArrayFloat64(array=narr)
+
+        ret_np = np.argwhere(narr > 9)
+        ret_sa = sarr.argwhere(lambda x: x > 9)
+
+        print()
+        print(ret_np)
+        print(ret_np.shape)
+        print(ret_sa.shape)
+        print(ret_np[0, 0])
+        print(ret_sa[0, 0])
+
 
 class SimpleArrayPlexTC(unittest.TestCase):
 

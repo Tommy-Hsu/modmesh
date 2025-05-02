@@ -32,6 +32,8 @@
 #include <modmesh/math/math.hpp>
 #include <modmesh/simd/simd.hpp>
 
+#include <pybind11/functional.h>
+
 #include <limits>
 #include <stdexcept>
 #include <functional>
@@ -292,6 +294,8 @@ public:
         }
         return max_index;
     }
+
+    SimpleArray<uint64_t> argwhere(const std::function<bool(value_type)> & func) const;
 }; /* end class SimpleArrayMixinSearch */
 
 } /* end namespace detail */
@@ -1030,6 +1034,24 @@ A detail::SimpleArrayMixinSort<A, T>::take_along_axis_simd(SimpleArray<I> const 
     T * dest = ret.begin();
     detail::indexed_copy(dest, data, src, end);
     return ret;
+}
+
+template <typename A, typename T>
+SimpleArray<uint64_t> detail::SimpleArrayMixinSearch<A, T>::argwhere (const std::function<bool(value_type)> & condition) const
+{
+    size_t num_true = 0;
+    auto athis = static_cast<A const *>(this);
+    for (size_t i = 0; i < athis->size(); ++i)
+    {
+        if (condition(athis->data(i)))
+        {
+            ++num_true;
+        }
+    }
+
+    //std::vector<size_t> ret_shape = {num_true, athis->ndim()};
+    SimpleArray<uint64_t> result(std::vector<size_t>{num_true, athis->ndim()});
+    return result;
 }
 
 template <typename S>

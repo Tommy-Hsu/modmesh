@@ -313,6 +313,7 @@ class MODMESH_PYTHON_WRAPPER_VISIBILITY WrapSimpleArray
         (*this)
             .def("argmin", &wrapped_type::argmin)
             .def("argmax", &wrapped_type::argmax)
+            .def("argwhere", &wrapped_type::argwhere)
             //
             ;
 
