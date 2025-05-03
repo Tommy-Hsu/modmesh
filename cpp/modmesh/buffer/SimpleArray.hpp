@@ -1054,11 +1054,22 @@ SimpleArray<uint64_t> detail::SimpleArrayMixinSearch<A, T>::argwhere(std::functi
 
     SimpleArray<uint64_t> result(std::vector<size_t>{num_true, athis->ndim()});
     auto it = result.begin();
-    // TODO: N-dimensionality
-    for (auto& index : indices)
+    uint64_t dim = 1;
+    for (size_t i = athis->ndim(); i > 1; --i)
     {
-        *it = index;
-        ++it;
+        dim *= athis->shape(i - 1);
+    }
+    for (auto const & index : indices)
+    {
+        uint64_t tmp = index;
+        uint64_t tmp_dim = dim;
+        for (size_t i = athis->ndim(); i > 0; --i)
+        {
+            *it = tmp / tmp_dim;
+            tmp = tmp % tmp_dim;
+            tmp_dim /= athis->shape(i - 1);
+            ++it;
+        }
     }
     return result;
 }

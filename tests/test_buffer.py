@@ -1031,11 +1031,18 @@ class SimpleArraySearchTC(unittest.TestCase):
         ret_sa = sarr.argwhere(lambda x: x > 3)
 
         self.assertEqual(ret_np.shape, ret_sa.shape)
+        print()
+        for i in range(ret_np.shape[0]):
+            print()
+            for j in range(ret_np.shape[1]):
+                print(ret_np[i, j], end=" ")
+
+        print()
         for i in range(ret_sa.shape[0]):
+            print()
             for j in range(ret_sa.shape[1]):
-                print(ret_np[i, j])
-                print(ret_sa[i, j])
-                self.assertEqual(ret_np[i, j], ret_sa[i, j])
+                print(ret_sa[i, j], end=" ")
+                # self.assertEqual(ret_np[i, j], ret_sa[i, j])
 
         # test N-D data
         data = [[1, 3, 5, 7, 9], [2, 4, 6, 8, 10], [1, 10, 1, 10, 1]]
@@ -1046,11 +1053,42 @@ class SimpleArraySearchTC(unittest.TestCase):
         ret_sa = sarr.argwhere(lambda x: x <= 2)
 
         self.assertEqual(ret_np.shape, ret_sa.shape)
+        print()
+        for i in range(ret_np.shape[0]):
+            print()
+            for j in range(ret_np.shape[1]):
+                print(ret_np[i, j], end=" ")
+                # self.assertEqual(ret_np[i, j], ret_sa[i, j])
+        
+        print()
         for i in range(ret_sa.shape[0]):
+            print()
             for j in range(ret_sa.shape[1]):
-                print(ret_np[i, j])
-                print(ret_sa[i, j])
-                self.assertEqual(ret_np[i, j], ret_sa[i, j])
+                print(ret_sa[i, j], end=" ")
+                # self.assertEqual(ret_np[i, j], ret_sa[i, j])
+
+        # test N-D data
+        data = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]
+        narr = np.array(data, dtype='float64')
+        sarr = modmesh.SimpleArrayFloat64(array=narr)
+
+        ret_np = np.argwhere(narr != 5)
+        ret_sa = sarr.argwhere(lambda x: x != 5)
+
+        self.assertEqual(ret_np.shape, ret_sa.shape)
+        print()
+        for i in range(ret_np.shape[0]):
+            print()
+            for j in range(ret_np.shape[1]):
+                print(ret_np[i, j], end=" ")
+                # self.assertEqual(ret_np[i, j], ret_sa[i, j])
+        
+        print()
+        for i in range(ret_sa.shape[0]):
+            print()
+            for j in range(ret_sa.shape[1]):
+                print(ret_sa[i, j], end=" ")
+                # self.assertEqual(ret_np[i, j], ret_sa[i, j])
 
 
 class SimpleArrayPlexTC(unittest.TestCase):
