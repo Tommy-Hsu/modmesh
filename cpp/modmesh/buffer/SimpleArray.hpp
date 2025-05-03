@@ -1039,39 +1039,34 @@ A detail::SimpleArrayMixinSort<A, T>::take_along_axis_simd(SimpleArray<I> const 
 template <typename A, typename T>
 SimpleArray<uint64_t> detail::SimpleArrayMixinSearch<A, T>::argwhere(std::function<bool(value_type)> const & condition) const
 {
-    size_t num_true = 0;
     auto athis = static_cast<A const *>(this);
-    std::forward_list<uint64_t> indices;
-    auto last = indices.before_begin();
-    for (size_t i = 0; i < athis->size(); ++i)
+    const uint64_t array_size = athis->size();
+    const uint64_t array_dim = athis->ndim();
+    std::vector<uint64_t> indices;
+    for (uint64_t i = 0; i < array_size; ++i)
     {
         if (condition(athis->data(i)))
         {
-            last = indices.emplace_after(last, static_cast<uint64_t>(i));
-            ++num_true;
+            indices.push_back(i);
         }
     }
 
-    SimpleArray<uint64_t> result(std::vector<size_t>{num_true, athis->ndim()});
-    auto it = result.begin();
-    uint64_t dim = 1;
-    for (size_t i = athis->ndim(); i > 1; --i)
-    {
-        dim *= athis->shape(i - 1);
-    }
+    SimpleArray<uint64_t> coordinates(std::vector<size_t>{indices.size(), array_dim});
+    auto coord = coordinates.begin();
+
+    std::vector<uint64_t> product_of_dims(array_dim, 1);
+    for (size_t i = 1; i < array_dim; ++i) product_of_dims[i] = product_of_dims[i - 1] * athis->shape(i);
     for (auto const & index : indices)
     {
-        uint64_t tmp = index;
-        uint64_t tmp_dim = dim;
-        for (size_t i = athis->ndim(); i > 0; --i)
+        uint64_t remaining_index = index;
+        for (int i = array_dim - 1; i >= 0; --i)
         {
-            *it = tmp / tmp_dim;
-            tmp = tmp % tmp_dim;
-            tmp_dim /= athis->shape(i - 1);
-            ++it;
+            *coord = remaining_index / product_of_dims[i];
+            remaining_index = remaining_index % product_of_dims[i];
+            ++coord;
         }
     }
-    return result;
+    return coordinates;
 }
 
 template <typename S>
