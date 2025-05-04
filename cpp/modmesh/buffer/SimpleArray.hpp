@@ -32,8 +32,6 @@
 #include <modmesh/math/math.hpp>
 #include <modmesh/simd/simd.hpp>
 
-#include <pybind11/functional.h>
-
 #include <limits>
 #include <stdexcept>
 #include <functional>
@@ -295,7 +293,10 @@ public:
         return max_index;
     }
 
-    SimpleArray<uint64_t> argwhere(std::function<bool(value_type)> const & func) const;
+    SimpleArray<uint64_t> argwhere() const;
+
+    SimpleArray<uint64_t> argwhere(std::function<bool(value_type const &)> const & condition) const;
+    A where(std::function<bool(value_type const &)> const & condition, A const & other) const;
 }; /* end class SimpleArrayMixinSearch */
 
 } /* end namespace detail */
@@ -1037,11 +1038,21 @@ A detail::SimpleArrayMixinSort<A, T>::take_along_axis_simd(SimpleArray<I> const 
 }
 
 template <typename A, typename T>
-SimpleArray<uint64_t> detail::SimpleArrayMixinSearch<A, T>::argwhere(std::function<bool(value_type)> const & condition) const
+SimpleArray<uint64_t> detail::SimpleArrayMixinSearch<A, T>::argwhere() const
+{
+    auto default_condition = [](value_type const & x)
+    {
+        return x != value_type();
+    };
+    return this->argwhere(default_condition);
+}
+
+template <typename A, typename T>
+SimpleArray<uint64_t> detail::SimpleArrayMixinSearch<A, T>::argwhere(std::function<bool(value_type const &)> const & condition) const
 {
     auto athis = static_cast<A const *>(this);
-    const uint64_t array_size = athis->size();
-    const uint64_t array_dim = athis->ndim();
+    uint64_t const array_size = athis->size();
+    uint64_t const array_dim = athis->ndim();
     std::vector<uint64_t> indices;
     for (uint64_t i = 0; i < array_size; ++i)
     {
@@ -1067,6 +1078,26 @@ SimpleArray<uint64_t> detail::SimpleArrayMixinSearch<A, T>::argwhere(std::functi
         }
     }
     return coordinates;
+}
+
+template <typename A, typename T>
+A detail::SimpleArrayMixinSearch<A, T>::where(std::function<bool(value_type const &)> const & condition, A const & other) const
+{
+    auto athis = static_cast<A const *>(this);
+    uint64_t const array_size = athis->size();
+    A ret(athis->shape());
+    for (uint64_t i = 0; i < array_size; ++i)
+    {
+        if (condition(athis->data(i)))
+        {
+            ret.data(i) = athis->data(i);
+        }
+        else
+        {
+            ret.data(i) = other.data(i);
+        }
+    }
+    return ret;
 }
 
 template <typename S>
